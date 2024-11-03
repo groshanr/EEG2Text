@@ -2,3 +2,7 @@ Murphy et al Dataset
 test_trainer
 .gitattributes
 POS_classifier transformer_test.ipynb
+dftoparquet.ipynb
+df.parquet.gzip
+best_rnn.keras
+.DS_Store
