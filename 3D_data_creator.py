@@ -72,11 +72,11 @@ for f in os.listdir(folder):
         x.append(sentence_x)
         y.append(sentence_y)
 
-train_x = x[0:np.floor(len(x)*0.9), :, :, :, :]
-test_x = x[np.ceil(len(x)*0.9):len(x), :, :, :, :]
+train_x = x[0:int(np.floor(len(x)*0.9)), :, :, :, :]
+test_x = x[int(np.ceil(len(x)*0.9):len(x)), :, :, :, :]
 
-train_y = y[0:np.floor(len(y)*0.9), :, :]
-test_y = y[np.ceil(len(y)*0.9), :, :]
+train_y = y[0:int(np.floor(len(y)*0.9)), :, :]
+test_y = y[int(np.ceil(len(y)*0.9)), :, :]
 
 f= open('train_x.pkl', 'wb') 
 train_x = pkl.dump(f)
