@@ -8,3 +8,5 @@ best_rnn.keras
 .DS_Store
 mini_x_train.pkl
 mini_y_train.pkl
+x_train.pkl
+y_train.pkl

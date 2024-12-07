@@ -48,6 +48,8 @@ for f in os.listdir(folder):
                                     [empty,   empty,   empty,      e['PO7'],   e['PO3'],  e['POz'],e['PO4'],  e['PO8'],empty,      empty,     empty],
                                     [empty,   empty,   empty,      empty,      e['O1'],   e['Oz'], e['O2'],   empty,   empty,      empty,     empty]])
             sentence_x.append(epoch_reshape)
+
+            #Making the Y data
             word = '/c/en/'+ meta['word']
             if model.has_index_for(word):
                 emb = model.get_vector(word, norm=True)
