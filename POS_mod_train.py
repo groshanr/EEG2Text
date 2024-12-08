@@ -1,21 +1,21 @@
 import tensorflow as tf
 import keras
+from keras import layers
 import pandas as pd
 import pickle as pkl
 import gensim.downloader
 import mne
 
 #Load training data
-f= open('mini_x_train.pkl', 'rb') 
+f= open('train_x.pkl', 'rb') 
 train_x = pkl.load(f) 
 f.close()
 
-f= open('mini_y_train.pkl', 'rb') 
+f= open('train_y.pkl', 'rb') 
 train_y = pkl.load(f) 
 f.close()
 
 
-#Semantic Module Creation
 CNN_input = keras.Input(shape=(32, 9, 11, 276, 1), batch_size=32, name = 'SentenceInput')
 
 #Conv Block 1
@@ -146,10 +146,10 @@ x = layers.TimeDistributed(layers.Flatten(name = 'Flatten'))(x)
 x = layers.TimeDistributed(layers.Dense(64, activation='relu', name = 'FinalDense1'))(x)
 x = layers.TimeDistributed(layers.Dense(32, activation='relu', name = 'FinalDense2'))(x)
 x = layers.TimeDistributed(layers.Dense(64, activation='relu', name = 'FinalDense3'))(x)
-x = layers.TimeDistributed(layers.Dense(300, name = 'WordVectorOutput'))(x)
-CNN_output = layers.TimeDistributed(layers.Normalization(axis=-1, name = 'Word Vector Normalization'))(x)
+x = layers.TimeDistributed(layers.Dense(16, name = 'PosOutput', activation='softmax'))(x)
+CNN_output = layers.TimeDistributed(layers.Normalization(axis=-1, name = 'Pos Normalization'))(x)
 
-semantic_encoder = keras.Model(CNN_input, CNN_output)
+pos_model = keras.Model(CNN_input, CNN_output)
 
 #Compile
 semantic_encoder.compile(

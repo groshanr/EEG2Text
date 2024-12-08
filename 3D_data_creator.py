@@ -6,12 +6,10 @@ import pandas as pd
 import pickle as pkl
 import gensim.downloader
 
-folder = ''
+folder = '/scratch/alpine/mawa5935/EEG2Text/Data/Session0'
 empty = np.zeros(276)
-sent_end = np.random.rand(9,11,276)
 sent_empty = np.zeros((9,11,276))
 pad = np.zeros(300)
-special_characters = '!@#$%^&*()_+-=[],."\''
 
 x = []
 y = []
@@ -23,6 +21,8 @@ for f in os.listdir(folder):
     epochs = mne.read_epochs(f)
     epochs_df = epochs.to_data_frame()
     metadata = epochs.metadata
+    metadata['pos'] = metadata['pos'].astype('category')
+    metadata['pos'] = metadata['pos'].cat.codes
 
     for s in np.unique(metadata['sent_ident']):
         sentence_meta = metadata[metadata['sent_ident']==s]
@@ -32,12 +32,33 @@ for f in os.listdir(folder):
         length = len(np.unique(sentence_eeg['epoch']))
 
         if length<5 or length>30:
-            #skip sentences that are longer than 30 words or less than 5 words
+            #skip sentences that are too long or too short
             continue
-        
+
         for w in np.unique(sentence_eeg['epoch']):
             e = sentence_eeg[sentence_eeg['epoch']==w]
             meta = sentence_meta.loc[w]
+
+            #If word is in vocabulary, add the embedding and the relevant features
+            word = '/c/en/'+ meta['word']
+            if model.has_index_for(word):
+                emb = model.get_vector(word, norm=True)
+                pos = meta['pos']
+                w_len = meta['len']
+                freq = meta['freq']
+            elif any(char.isdigit() for char in word):
+                #most of the out of vocabulary words are numbers, so since we care about semantics, we can just make the correct be the word "number"
+                emb = model.get_vector('/c/en/number', norm=True)
+                pos = meta['pos']
+                w_len = meta['len']
+                freq = meta['freq']
+            else:
+                #other OOV words will result in the sentence being omitted
+                OOV.append(word)
+                break
+
+            sentence_y.append([emb, pos, w_len, freq])
+            
             epoch_reshape = np.array([[empty,   empty,   empty,      empty,      e['Fp1'],  empty,   e['Fp2'],  empty,   empty,      empty,     empty],
                                     [empty,   empty,   empty,      e['AF7'],   e['AF3'],  e['AFz'],e['AF4'],  e['AF8'],empty,      empty,     empty],
                                     [empty,   e['F7'], e['F5'],    e['F3'],    e['F1'],   e['Fz'], e['F2'],   e['F4'], e['F6'],    e['F8'],   empty],
@@ -49,30 +70,17 @@ for f in os.listdir(folder):
                                     [empty,   empty,   empty,      empty,      e['O1'],   e['Oz'], e['O2'],   empty,   empty,      empty,     empty]])
             sentence_x.append(epoch_reshape)
 
-            #Making the Y data
-            word = '/c/en/'+ meta['word']
-            if model.has_index_for(word):
-                emb = model.get_vector(word, norm=True)
-            elif any(char.isdigit() for char in word):
-                #most of the out of vocabulary words are numbers, so since we care about semantics, we can just make the correct be the word "number"
-                emb = model.get_vector('/c/en/number', norm=True)
-            elif any(char in special_characters for char in word):
-                #other ones are just punctuation, so we can just use the word "punctuation"
-                emb = model.get_vector('/c/en/punctuation', norm=True)
-            else:
-                #other OOV words will have the correct embedding be zeros 
-                OOV.append(word)
-                emb = pad
-            sentence_y.append(emb)
+
             if word not in vocabulary.keys():
                 vocabulary[word] = emb
+
         sentence_x.append(sent_end)
-        sentence_y.append(pad)
         for i in range(31-length):
             sentence_x.append(sent_empty)
-            sentence_y.append(pad)
+            sentence_y.append([pad, 'PAD', 0, 0])
         x.append(sentence_x)
         y.append(sentence_y)
+
 
 train_x = x[0:int(np.floor(len(x)*0.9)), :, :, :]
 test_x = x[int(np.ceil(len(x)*0.9)):int(len(x)), :, :, :]
@@ -81,18 +89,17 @@ train_y = y[0:int(np.floor(len(y)*0.9)), :, :]
 test_y = y[int(np.ceil(len(y)*0.9)):int(len(y)), :, :]
 
 f= open('train_x.pkl', 'wb') 
-train_x = pkl.dump(f)
+pkl.dump(train_x, f)
 f.close()
 
 f= open('train_y.pkl', 'wb') 
-train_y = pkl.dump(f)
+pkl.dump(train_y, f)
 f.close()
 
-f= open('test_x.pkl', 'wb') 
-test_x = pkl.dump(f)
+f = open('test_x.pkl', 'wb')
+pkl.dump(test_x, f)
 f.close()
 
-f= open('test_y.pkl', 'wb') 
-test_y = pkl.dump(f)
+f = open('test_y.pkl', 'wb')
+pkl.dump(test_y, f)
 f.close()
-
