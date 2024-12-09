@@ -152,14 +152,14 @@ CNN_output = layers.TimeDistributed(layers.Normalization(axis=-1, name = 'Pos No
 pos_model = keras.Model(CNN_input, CNN_output)
 
 #Compile
-semantic_encoder.compile(
+pos_model.compile(
     optimizer=keras.optimizers.Adam(learning_rate=1e-3),
-    loss=keras.losses.CosineSimilarity(),
+    loss=keras.losses.CategoricalCrossentropy,
     metrics=[keras.metrics.MeanSquaredError(), keras.metrics.CosineSimilarity()]
 )
 
 #Train
-semantic_encoder.fit(
+pos_model.fit(
     x = train_x,
     y = train_y,
     batch_size = 32,
