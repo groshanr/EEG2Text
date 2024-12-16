@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #SBATCH --nodes=1
-#SBATCH --time=03:00:00
+#SBATCH --time=10:00:00
 #SBATCH --partition=amilan
-#SBATCH --ntasks=32
+#SBATCH --ntasks=22
 #SBATCH --job-name=wfEEG2TEXT
 #SBATCH --output=wfEEG2TEXT.out
 #SBATCH --account=ucb-general

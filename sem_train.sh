@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --nodes=1
-#SBATCH --time=07:00:00
+#SBATCH --time=08:30:00
 #SBATCH --partition=amilan
 #SBATCH --ntasks=32
 #SBATCH --job-name=semEEG2TEXT

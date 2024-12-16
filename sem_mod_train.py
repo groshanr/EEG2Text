@@ -18,9 +18,8 @@ f.close()
 
 batch_size = 32
 
-over = np.mod(len(y_train), batch_size)
-y_train = y_train[0:int(len(y_train)-over)]
-x_train = x_train[0:int(len(x_train)-over)]
+# y_train = y_train[0:32]
+# x_train = x_train[0:32]
 
 y_train_new = np.zeros((len(y_train), 32, 300))
 i = 0
@@ -42,10 +41,10 @@ semantic_encoder.fit(
     x = x_train,
     y = y_train,
     batch_size = batch_size,
-    epochs = 1,
+    epochs = 6,
     validation_split = 0.1,
     callbacks = keras.callbacks.BackupAndRestore(
-    "temp_sem/", save_freq=5, delete_checkpoint=True, save_before_preemption=False
+    "temp_sem/", save_freq=20, delete_checkpoint=True, save_before_preemption=False
 )
 )
 
@@ -60,6 +59,9 @@ f.close()
 f = open('y_test.pkl', 'rb')
 y_test = pkl.load(f)
 f.close()
+
+# x_test = x_test[0:32]
+# y_test = y_test[0:32]
 
 y_test_new = np.zeros((len(y_test), 32, 300))
 i = 0

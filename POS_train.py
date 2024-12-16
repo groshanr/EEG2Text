@@ -17,9 +17,8 @@ f.close()
 
 batch_size = 32
 
-over = np.mod(len(y_train), batch_size)
-y_train = y_train[0:int(len(y_train)-over)]
-x_train = x_train[0:int(len(x_train)-over)]
+# x_train = x_train[0:75]
+# y_train = y_train[0:75]
 
 y_train_new = np.zeros((len(y_train), 32))
 i = 0
@@ -41,11 +40,10 @@ pos_model.fit(
     x = x_train,
     y =  y_train,
     batch_size = batch_size,
-    epochs = 1,
+    epochs = 5,
     validation_split = 0.1,
     callbacks = keras.callbacks.BackupAndRestore(
-    "temp_pos/", save_freq=5, delete_checkpoint=True, save_before_preemption=False
-)
+    "temp_pos/", save_freq=5, delete_checkpoint=True, save_before_preemption=False)
 )
 
 pos_model.save('PosModel.keras')
@@ -59,6 +57,9 @@ f.close()
 f = open('y_test.pkl', 'rb')
 y_test = pkl.load(f)
 f.close()
+
+# x_test = x_test[0:32]
+# y_test = y_test[0:32]
 
 y_test_new = np.zeros((len(y_test), 32))
 i = 0
@@ -80,6 +81,6 @@ results = pos_model.evaluate(
     )
 
 # Save the dictionary to a file
-with open('pos-4real_results.txt', 'w') as f:
+with open('pos_results.txt', 'w') as f:
     json.dump(results, f)
 

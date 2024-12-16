@@ -1,4 +1,3 @@
-
 import os
 import mne
 import numpy as np
@@ -7,7 +6,7 @@ import pickle as pkl
 import gensim.downloader
 import random
 
-folder = '/scratch/alpine/mawa5935/EEG2Text/Data/Session0/'
+folder = '/scratch/alpine/mawa5935/EEG2Text/Data/Session1/'
 
 empty = np.zeros(276)
 
@@ -16,6 +15,7 @@ y = []
 OOV = []
 vocabulary = {}
 model = gensim.downloader.load('conceptnet-numberbatch-17-06-300')
+glove = gensim.downloader.load('glove-twitter-25')
 
 f = open('POS_map.pkl', 'rb')
 POS_map = pkl.load(f)
@@ -33,7 +33,7 @@ for f in os.listdir(folder):
         sentence_meta = metadata[metadata['sent_ident']==s]
         sentence_eeg = epochs_df[epochs_df['epoch'].isin(sentence_meta.index)]
         sentence_x = np.zeros((32,9,11,276))
-        sentence_y = np.zeros((32, 304))
+        sentence_y = np.zeros((32, 330))
         length = len(np.unique(sentence_eeg['epoch']))
 
         if length<5 or length>29:
@@ -49,26 +49,27 @@ for f in os.listdir(folder):
             #If word is in vocabulary, add the embedding and the relevant features
             word = '/c/en/'+ meta['word']
 
-            vector = np.zeros((304))
+            vector = np.zeros((330))
 
-            if model.has_index_for(word):
+            if model.has_index_for(word) & glove.has_index_for(meta['word']):
                 vector[0:300] = model.get_vector(word, norm=True)
-                vector[301] = meta['pos']
+                vector[301] = meta['pos']+1
                 vector[302] = meta['len']
                 vector[303] = meta['freq']
-            elif any(char.isdigit() for char in word):
+                vector[304:329] = glove.get_vector(meta['word'], norm = True)
+                vocabulary[meta['word']] = vector
+            elif any(char.isdigit() for char in word) & glove.has_index_for(meta['word']):
                 #most of the out of vocabulary words are numbers, so since we care about semantics, we can just make the correct be the word "number"
                 vector[0:300] = model.get_vector('/c/en/number', norm=True)
                 vector[301] = meta['pos']+1
                 vector[302] = meta['len']
                 vector[303] = meta['freq']
+                vector[304:329] = glove.get_vector(meta['word'], norm = True)
+                vocabulary[meta['word']] = vector
             else:
                 #other OOV words will result in the sentence being omitted
                 OOV.append(word)
                 break
-
-            if word not in vocabulary.keys():
-                vocabulary[word] = vector[0:300]
 
             sentence_y[i] = vector
             
@@ -102,6 +103,10 @@ f= open('y.pkl', 'wb')
 pkl.dump(y, f)
 f.close()
 
+f= open('vocab.pkl', 'wb') 
+pkl.dump(vocabulary, f)
+f.close()
+
 n = len(x)
 idx = list(range(n))
 random.shuffle(idx)
@@ -121,7 +126,7 @@ for i in range(n):
         y_train.append(y[i])
     elif i in test_idx:
         x_test.append(x[i])
-        y_train.append(y[i]) 
+        y_test.append(y[i]) 
     else:
         print('error at ', i)
         print(x[i].shape)

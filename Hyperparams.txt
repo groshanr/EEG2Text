@@ -1,0 +1,30 @@
+Frequency Module:
+
+    Epochs: 8
+    Optimizer: Adadelta
+    Loss: MSE
+    
+    Current Best MAE: 1.20
+
+Word Length Module:
+    
+    Epochs: 8
+    Optimizer: Adadelta
+    Loss: MSE
+    
+    Current Best MAE: 1.00
+
+Semantic Vector Module:
+    
+    Epochs: 6
+    Optimizer: Adadelta
+    Loss: Cosine Similarity
+
+Part of Speech Module:
+    
+    Epochs: 6
+    Optimizer: Adadelta
+    Loss: Sparse Categorical Cross Entropy
+    
+    Current Best Acc: 61.94%
+    Current Best Top 3 Acc: 62.30%

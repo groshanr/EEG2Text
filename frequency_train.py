@@ -17,9 +17,8 @@ f.close()
 
 batch_size = 32
 
-over = np.mod(len(y_train), batch_size)
-y_train = y_train[0:int(len(y_train)-over)]
-x_train = x_train[0:int(len(x_train)-over)]
+# y_train = y_train[0:64]
+# x_train = x_train[0:64]
 
 y_train_new = np.zeros((len(y_train), 32))
 i = 0
@@ -34,21 +33,20 @@ y_train = y_train_new
 
 x_train = np.array(x_train)
 
-pos_model = keras.models.load_model("FrequencyModel.keras")
+freq_model = keras.models.load_model("FrequencyModel.keras")
 
 
-pos_model.fit(
+freq_model.fit(
     x = x_train,
     y =  y_train,
     batch_size = batch_size,
-    epochs = 1,
+    epochs = 5,
     validation_split = 0.1,
     callbacks = keras.callbacks.BackupAndRestore(
-    "temp_freq/", save_freq=5, delete_checkpoint=True, save_before_preemption=False
-)
+    "temp_freq/", save_freq=5, delete_checkpoint=True, save_before_preemption=False)
 )
 
-pos_model.save('FrequencyModel.keras')
+freq_model.save('FrequencyModel.keras')
 
 #Evaluate
 
@@ -73,7 +71,10 @@ y_test = y_test_new
 
 x_test = np.array(x_test)
 
-results = pos_model.evaluate(
+# x_test = x_test[0:32]
+# y_test = y_test[0:32]
+
+results = freq_model.evaluate(
     x = x_test,
     y = y_test,
     return_dict = True
